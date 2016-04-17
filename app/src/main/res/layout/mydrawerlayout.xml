@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<android.support.v4.widget.DrawerLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent">
+    <!--主布局-->
+    <include layout="@layout/content_main" />
+    <!--左侧用户界面-->
+    <include layout="@layout/userlayout"/>
+    <!--右侧社群界面-->
+    <include layout="@layout/communitylayout"/>
+</android.support.v4.widget.DrawerLayout>

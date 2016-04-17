@@ -1,0 +1,62 @@
+<?xml version="1.0" encoding="utf-8"?>
+<com.ogaclejapan.arclayout.ArcLayout xmlns:app="http://schemas.android.com/apk/res-auto"
+    android:id="@+id/arc_layout"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    app:arc_origin="center"
+    app:arc_color="#4D000000"
+    app:arc_radius="128dp"
+    app:arc_axisRadius="72dp"
+    app:arc_freeAngle="false"
+    app:arc_reverseAngle="false"
+    xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="A"
+        android:textColor="#FFFFFF"
+        android:background="#03A9F4"
+        app:arc_origin="center"
+        />
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="B"
+        android:textColor="#FFFFFF"
+        android:background="#00BCD4"
+        app:arc_origin="center"
+        />
+
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="C"
+        android:textColor="#FFFFFF"
+        android:background="#109900"
+        app:arc_origin="center"
+        />
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="D"
+        android:textColor="#FFFFFF"
+        android:background="#009688"
+        app:arc_origin="center"
+        />
+    <Button
+        android:layout_width="48dp"
+        android:layout_height="48dp"
+        android:gravity="center"
+        android:text="E"
+        android:textColor="#FFFFFF"
+        android:background="#024030"
+        app:arc_origin="center"
+        />
+
+</com.ogaclejapan.arclayout.ArcLayout>
