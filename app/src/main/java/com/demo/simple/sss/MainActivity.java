@@ -25,10 +25,12 @@ import android.webkit.WebView;
 import android.webkit.WebViewClient;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.avos.avoscloud.AVException;
 import com.avos.avoscloud.AVOSCloud;
+import com.avos.avoscloud.AVQuery;
 import com.avos.avoscloud.AVUser;
 import com.avos.avoscloud.SignUpCallback;
 import com.demo.simple.sss.com.demo.simple.sss.functions.*;
@@ -36,11 +38,16 @@ import com.google.android.gms.appindexing.Action;
 import com.google.android.gms.appindexing.AppIndex;
 import com.google.android.gms.common.api.GoogleApiClient;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.w3c.dom.Text;
+
 import java.net.URL;
 
 
 public class MainActivity extends AppCompatActivity {
     public Handler newsHandler = null;
+    public Handler usermsgHandler=null;
     public String Url = "https://html5media.info/";
     public URL url;
     public String urlstr;
@@ -48,13 +55,18 @@ public class MainActivity extends AppCompatActivity {
     private Handler mHandler = new Handler();
     private GoogleApiClient client;
     public WebView newsWebview;
-    static String TAG = "测试测试测试测试测试测试测试测试测试测试这个钮就是测试用的！哈哈！";
+    static String TAG = "mainactivity！";
     EditText mUserName;
     EditText mpassword;
     EditText mAddress;
     EditText mWord;
     EditText mPone;
     AVUser currentUser ;
+    AVUser upDateAVUser;
+    TextView name;
+    TextView word;
+    JSONObject USER;
+
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -67,6 +79,8 @@ public class MainActivity extends AppCompatActivity {
         Button loginbtn = (Button) findViewById(R.id.loginButton);
         Button callbackbtn = (Button) findViewById(R.id.callbackButton);
         Button setbtn=(Button)findViewById(R.id.setButton);
+        name=(TextView) findViewById(R.id.name);
+        word=(TextView)findViewById(R.id.word);
         //绑定leancloud数据库
         AVOSCloud.initialize(this, "zyY2iIQTX8otX65N9AST7YU5-gzGzoHsz", "UNXFoqqW2cvrdr06dnApYMTY");
         //更新webview
@@ -76,15 +90,67 @@ public class MainActivity extends AppCompatActivity {
         if (currentUser != null) {
             // 允许用户使用应用
             loginbtn.setVisibility(View.GONE);
+            usermsgHandler =new Handler(){
+                /**
+                 * Subclasses must implement this to receive messages.
+                 *
+                 * @param msg
+                 */
+                @Override
+                public void handleMessage(Message msg) {
+                    super.handleMessage(msg);
+                    Bundle usermsgbundle = msg.getData();
+                    name.setText(usermsgbundle.get("name").toString());
+                    word.setText(usermsgbundle.get("word").toString());
+                    Log.d(TAG,"change msg");
+                   // String newsHtmlurl = newsbundle.getString("newsHtmlurl");
+                }
+            };
+            new Thread(){
+                /**
+                 * Calls the <code>run()</code> method of the Runnable object the receiver
+                 * holds. If no Runnable is set, does nothing.
+                 *
+                 * @see Thread#start
+                 */
+                @Override
+                public void run() {
+                    Message usermsg = newsHandler.obtainMessage();
+                    user user=new user();
+                    upDateAVUser=user.getuser(currentUser);
+                    Bundle usermsgbundle = new Bundle();
+                    if (upDateAVUser!=null) {
+                        //是否需要呢？
+                        /*try {
+                            USER.put("name", upDateAVUser.getUsername().toString());
+                            USER.put("word", upDateAVUser.get("word").toString());
+                            USER.put("address", upDateAVUser.get("address").toString());
+                            USER.put("phone",upDateAVUser.getMobilePhoneNumber().toString());
+
+                        }catch (JSONException e){
+
+                        }*/
+                        usermsgbundle.putString("name",upDateAVUser.get("username").toString());
+                        usermsgbundle.putString("word",upDateAVUser.get("word").toString());
+                        Log.d(TAG,"find msg");
+                    }else{
+
+                    }
+                    usermsg.setData(usermsgbundle);
+                    usermsgHandler.sendMessage(usermsg);
+                    // user.updateuser(upDateAVUser);
+                }
+            }.start();
         } else {
-           //缓存用户对象为空时， 可打开用户注册界面…
+           //缓存用户对象为空时， 可打开用户注册界面…显示loginbutton
             setbtn.setVisibility(View.GONE);
         }
         //登录
         loginbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                Log.i(TAG, "这里应该做成登录过的修改，未登录的注册，而且界面应该相同");
+                Log.i(TAG, "这里应该做成登录过的修改，未登录的注册，而且界面应该相同" +
+                        "");
                 if (currentUser != null) {
                     Log.i(TAG, "已经登录，去设置其他信息");
                     // 允许用户使用应用
@@ -97,7 +163,13 @@ public class MainActivity extends AppCompatActivity {
         callbackbtn.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                new AlertDialog.Builder(MainActivity.this).setTitle("请输入").setIcon(android.R.drawable.ic_dialog_info).setView(new EditText(MainActivity.this)).setPositiveButton("确定",null).setNegativeButton("取消", null).show();
+                //这里的代码简单，但不好用
+                new AlertDialog.Builder(MainActivity.this).
+                        setTitle("请输入").
+                        setIcon(android.R.drawable.ic_dialog_info).
+                        setView(new EditText(MainActivity.this)).
+                        setPositiveButton("确定",null).
+                        setNegativeButton("取消", null).show();
             }
         });
         //设置个人信息
@@ -106,28 +178,35 @@ public class MainActivity extends AppCompatActivity {
             public void onClick(View v) {
                 //设置头像，地址，个性标语
                 //头像直接点击头像设置
+                //只要set button出现，currentUser！=null，所以可以直接使用
                 AlertDialog.Builder builder = new AlertDialog.Builder(MainActivity.this);
                 LayoutInflater layoutInflater = LayoutInflater.from(MainActivity.this);
                 View setview=layoutInflater.inflate(R.layout.setusermsglayout,null);
+
                 mUserName = (EditText) setview.findViewById(R.id.edit_username);
                 mWord=(EditText)setview.findViewById(R.id.edit_word);
                 mPone=(EditText)setview.findViewById(R.id.edit_phone);
                 mAddress=(EditText)setview.findViewById(R.id.edit_address);
-                if (currentUser!=null){
-                    //以后可以做到更具相应的更新
-                }else{
-
-                }
+                mUserName.setText(upDateAVUser.getUsername());
+                mWord.setText(upDateAVUser.get("word").toString());
+                mPone.setText(upDateAVUser.getMobilePhoneNumber());
+                mAddress.setText(upDateAVUser.get("address").toString());
 
                 builder.setTitle("个人信息").setView(setview).setPositiveButton("确定", new DialogInterface.OnClickListener() {
                     @Override
                     public void onClick(DialogInterface dialog, int which) {
                         //更改信息
-                        currentUser.setUsername(mUserName.getText().toString());
-                        currentUser.setMobilePhoneNumber(mPone.getText().toString());
-                        currentUser.put("address",mAddress.getText().toString());
-                        currentUser.put("word",mWord.getText().toString());
-                        currentUser.saveInBackground();
+                        if(upDateAVUser!=null) {
+                            upDateAVUser.setUsername(mUserName.getText().toString());
+                            upDateAVUser.setMobilePhoneNumber(mPone.getText().toString());
+                            upDateAVUser.put("address", mAddress.getText().toString());
+                            upDateAVUser.put("word", mWord.getText().toString());
+                            upDateAVUser.saveInBackground();
+                            name.setText(upDateAVUser.getUsername().toString());
+                            word.setText(upDateAVUser.get("word").toString());
+                        }else{
+                            Log.d(TAG,TAG);
+                        }
                     }
                 }).setNeutralButton("取消", new DialogInterface.OnClickListener() {
                     @Override
